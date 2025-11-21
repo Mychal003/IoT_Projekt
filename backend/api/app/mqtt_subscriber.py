@@ -65,13 +65,31 @@ class MQTTSubscriber:
         except Exception as e:
             print(f"Error processing message: {e}")
 
-
     def connect(self):
-        if self.mqtt_username and self.mqtt_password:
-            self.mqtt_client.username_pw_set(self.mqtt_username, self.mqtt_password)
+        """Connects to MQTT broker with retry logic"""
+        import time
+        
+        max_retries = 10
+        retry_delay = 3  # sekund
+        
+        for attempt in range(max_retries):
+            try:
+                if self.mqtt_username and self.mqtt_password:
+                    self.mqtt_client.username_pw_set(self.mqtt_username, self.mqtt_password)
 
-        self.mqtt_client.connect(self.mqtt_broker, self.mqtt_port, keepalive=60)
-        self.mqtt_client.loop_start()
+                print(f"Attempt {attempt + 1}/{max_retries}: Connecting to MQTT broker at {self.mqtt_broker}:{self.mqtt_port}...")
+                self.mqtt_client.connect(self.mqtt_broker, self.mqtt_port, keepalive=60)
+                self.mqtt_client.loop_start()
+                print("Successfully connected to MQTT broker!")
+                return
+                
+            except ConnectionRefusedError as e:
+                if attempt < max_retries - 1:
+                    print(f"Connection refused. Retrying in {retry_delay} seconds...")
+                    time.sleep(retry_delay)
+                else:
+                    print(f"Failed to connect after {max_retries} attempts")
+                    raise e
 
     def disconnect(self):
         self.mqtt_client.loop_stop()

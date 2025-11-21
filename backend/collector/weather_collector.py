@@ -26,9 +26,9 @@ class WeatherCollector:
     
         # Cities to monitor
         self.cities = [
-            {"name":"Warszawa", "lat": 52.15, "lon": 21},
-            {"name": "Poznań", "lat": 52.17, "lon": 16.44}
-        ]
+            {"name": "Warszawa", "lat": 52.15, "lon": 21},
+            {"name": "Yakutsk", "lat": 62.03, "lon": 129.73}
+]
 
         # MQTT setup
         self.mqtt_broker = os.getenv("MQTT_BROKER", "localhost")
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     try:
         while True:
             collector.publish_weather("Warszawa")
-            collector.publish_weather("Poznań")
+            collector.publish_weather("Yakutsk")
             time.sleep(10)
             print(json.dumps(weather_data, indent=4, ensure_ascii=False))
     except KeyboardInterrupt:

@@ -1,31 +1,33 @@
 services:
   rabbitmq:
-    image: rabbitmq:latest
+    image: rabbitmq:3-management
     container_name: rabbitmq
+    hostname: rabbitmq
     restart: always
     ports:
-      - 5672:5672
-      - 15672:15672
-      - 1883:1883
+      - "5672:5672"
+      - "15672:15672"
+      - "1883:1883"
     environment:
       RABBITMQ_DEFAULT_USER: kalo
       RABBITMQ_DEFAULT_PASS: kalo
-    configs:
-      - source: rabbitmq-plugins
-        target: /etc/rabbitmq/enabled_plugins
     volumes:
-      - rabbitmq-lib:/var/lib/rabbitmq/
+      - rabbitmq-lib:/var/lib/rabbitmq
       - rabbitmq-log:/var/log/rabbitmq
 
   flask-api:
     build: ./backend/api
-    depends_on: [rabbitmq]
+    container_name: flask-api
+    restart: always
+    depends_on:
+      - rabbitmq
     ports:
       - "5000:5000"
-
-configs:
-  rabbitmq-plugins:
-    content: "[rabbitmq_management, rabbitmq_mqtt]."  
+    environment:
+      - MQTT_BROKER=rabbitmq
+      - MQTT_PORT=1883
+      - MQTT_USERNAME=kalo
+      - MQTT_PASSWORD=kalo
 
 volumes:
   rabbitmq-lib:

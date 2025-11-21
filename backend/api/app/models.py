@@ -20,11 +20,11 @@ class WeatherReading(db.Model):
     timestamp = db.Column(db.Integer, nullable=False)
     received_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-
     def to_dict(self):
         return {
             'id': self.id,
             'city': self.city,
+            'temperature': self.temperature,
             'humidity': self.humidity,
             'pressure': self.pressure,
             'wind_speed': self.wind_speed,
@@ -32,5 +32,4 @@ class WeatherReading(db.Model):
             'timestamp': self.timestamp,
             'received_at': self.received_at.isoformat()
         }
-
 
