@@ -65,7 +65,7 @@ class Alert(db.Model):
     __tablename__ = 'alerts'
 
     id = db.Column(db.Integer, primary_key=True)
-    rule_id = db.Column(db.Integer, db.ForeignKey('alert_rules.id'), nullable=False)
+    rule_id = db.Column(db.Integer, db.ForeignKey('alert_rules.id', ondelete='CASCADE'), nullable=False)
     city = db.Column(db.String(100), nullable=False, index=True)
     message = db.Column(db.String(500), nullable=False)
     severity = db.Column(db.String(20), default='warning')  # 'info', 'warning', 'critical'

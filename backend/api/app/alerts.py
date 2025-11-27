@@ -1,6 +1,8 @@
 """
 Alert Engine
 Sprawdza warunki pogodowe i generuje alerty
+    względem zdefiniowanych reguł
+
 """
 
 from app import db
@@ -31,12 +33,12 @@ class AlertEngine:
         ).all()
         
         generated_alerts = []
-        
+        # Sprawdź każdą regułę pod kątem odczytu pogodowego
         for rule in rules:
             if self._should_trigger_alert(reading, rule):
                 alert = self._create_alert(reading, rule)
                 if alert:
-                    generated_alerts.append(alert)
+                    generated_alerts.append(alert) # Dodaj wygenerowany alert do listy
         
         return generated_alerts
     
@@ -48,11 +50,10 @@ class AlertEngine:
         if value is None:
             return False
         
-        # Konwertuj temperaturę z Kelvinów na Celsjusze jeśli potrzeba
+        # Konwertuj temperaturę z Kelvinów
         if rule.condition_type == 'temperature':
             value = value - 273.15
         
-        # Sprawdź czy już istnieje podobny alert w ostatnich 30 minutach
         # (żeby nie spamować alertami)
         recent_cutoff = datetime.utcnow() - timedelta(minutes=30)
         recent_alert = Alert.query.filter(
@@ -138,7 +139,7 @@ class AlertEngine:
     def _determine_severity(self, rule: AlertRule, value: float) -> str:
         """Określa poziom ważności alertu"""
         
-        # Przykładowa logika - można dostosować
+        
         if rule.condition_type == 'temperature':
             if value > 35 or value < -20:
                 return 'critical'
@@ -184,7 +185,7 @@ class AlertEngine:
         return False
 
 
-# Przykładowe domyślne reguły
+#domyslne reguły
 DEFAULT_ALERT_RULES = [
     {
         'name': 'Ekstremalna temperatura - gorąco',

@@ -1,5 +1,7 @@
 """
-MQTT Subscriber with Alert Engine Integration
+MQTT Subscriber z Alert Engine
+Odbiera wiadomości MQTT z danymi pogodowymi, zapisuje je do bazy danych
+i sprawdza reguły alertów, generując alerty w razie potrzeby
 """
 
 import paho.mqtt.client as mqtt
@@ -32,22 +34,22 @@ class MQTTSubscriber:
     def _on_connect(self, client, userdata, flags, reason_code, properties):
         if reason_code == 0:
             self.mqtt_connected = True
-            print(f"✓ Connected to MQTT broker: {self.mqtt_broker}:{self.mqtt_port}")
+            print(f"Connected to MQTT broker: {self.mqtt_broker}:{self.mqtt_port}")
             client.subscribe("weather/#")
-            print("✓ Subscribed to weather topics...")
+            print("Subscribed to weather topics...")
         else:
-            print(f"✗ Failed to connect to MQTT broker, code {reason_code}")
+            print(f"Failed to connect to MQTT broker, code {reason_code}")
 
     def _on_disconnect(self, client, userdata, flags, reason_code, properties):
         self.mqtt_connected = False
-        print("⚠ Disconnected from MQTT broker")
+        print("Disconnected from MQTT broker")
 
     def _on_message(self, client, userdata, message):
         """Callback when message received from MQTT broker"""
         try:
             payload = json.loads(message.payload.decode())
             city = payload.get('city')
-            print(f"📩 Received message from {message.topic}: {city}")
+            print(f"Received message from {message.topic}: {city}")
 
             with self.app.app_context():
                 # Zapisz odczyt do bazy
@@ -63,9 +65,9 @@ class MQTTSubscriber:
 
                 db.session.add(reading)
                 db.session.commit()
-                print(f"💾 Saved weather data for {city} to database")
+                print(f"Saved weather data for {city} to database")
 
-                # ✨ NOWE: Sprawdź alerty dla tego odczytu
+                #Sprawdź alerty dla tego odczytu
                 alerts = self.alert_engine.check_reading(reading)
                 if alerts:
                     print(f"Generated {len(alerts)} alert(s) for {city}")
@@ -93,10 +95,10 @@ class MQTTSubscriber:
                 if self.mqtt_username and self.mqtt_password:
                     self.mqtt_client.username_pw_set(self.mqtt_username, self.mqtt_password)
 
-                print(f"🔄 Attempt {attempt + 1}/{max_retries}: Connecting to MQTT broker at {self.mqtt_broker}:{self.mqtt_port}...")
+                print(f"Attempt {attempt + 1}/{max_retries}: Connecting to MQTT broker at {self.mqtt_broker}:{self.mqtt_port}...")
                 self.mqtt_client.connect(self.mqtt_broker, self.mqtt_port, keepalive=60)
                 self.mqtt_client.loop_start()
-                print("✓ Successfully connected to MQTT broker!")
+                print("Successfully connected to MQTT broker!")
                 return
                 
             except ConnectionRefusedError as e:
@@ -111,4 +113,4 @@ class MQTTSubscriber:
         """Disconnect from MQTT broker"""
         self.mqtt_client.loop_stop()
         self.mqtt_client.disconnect()
-        print("✓ Disconnected from MQTT broker")
+        print("Disconnected from MQTT broker")

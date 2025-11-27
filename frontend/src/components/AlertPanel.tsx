@@ -56,6 +56,18 @@ function AlertPanel({ city }: AlertPanelProps) {
     }
   };
 
+  const deleteAlert = async (alertId: number) => {
+    if (!confirm('Czy na pewno chcesz usunąć ten alert?')) return;
+    
+    try {
+      await fetch(`http://localhost:5000/api/alerts/${alertId}`, {
+        method: 'DELETE',
+      });
+      fetchAlerts(); // Odśwież listę
+    } catch (error) {
+      console.error('Error deleting alert:', error);
+    }
+  };
   const markAllAsRead = async () => {
     try {
       const params = city ? `?city=${city}` : '';
@@ -182,14 +194,23 @@ function AlertPanel({ city }: AlertPanelProps) {
                   </p>
                 </div>
 
-                {!alert.is_read && (
+                <div className="flex gap-2 ml-4">
+                  {!alert.is_read && (
+                    <button
+                      onClick={() => markAsRead(alert.id)}
+                      className="px-3 py-1 bg-white/50 hover:bg-white rounded-lg text-sm font-medium transition-colors"
+                    >
+                      ✓ Przeczytane
+                    </button>
+                  )}
+                  
                   <button
-                    onClick={() => markAsRead(alert.id)}
-                    className="ml-4 px-3 py-1 bg-white/50 hover:bg-white rounded-lg text-sm font-medium transition-colors"
+                    onClick={() => deleteAlert(alert.id)}
+                    className="px-3 py-1 bg-red-100 text-red-800 hover:bg-red-200 rounded-lg text-sm font-medium transition-colors"
                   >
-                    Oznacz jako przeczytane
+                    🗑 Usuń
                   </button>
-                )}
+                </div>
               </div>
             </div>
           ))}

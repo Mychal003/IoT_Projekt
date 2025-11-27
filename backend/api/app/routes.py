@@ -257,3 +257,43 @@ def get_stats():
         'active_rules': active_rules,
         'cities_monitored': cities
     })
+
+@api_bp.route('/alerts/<int:alert_id>', methods=['DELETE'])
+def delete_alert(alert_id):
+    """Usuwa pojedynczy alert"""
+    alert = Alert.query.get(alert_id)
+    
+    if not alert:
+        return jsonify({'error': 'Alert not found'}), 404
+    
+    try:
+        db.session.delete(alert)
+        db.session.commit()
+        return jsonify({
+            'success': True, 
+            'message': 'Alert deleted successfully'
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@api_bp.route('/alerts', methods=['DELETE'])
+def delete_all_alerts():
+    """Usuwa wszystkie alerty (opcjonalnie dla miasta)"""
+    city = request.args.get('city')
+    
+    try:
+        if city:
+            count = Alert.query.filter_by(city=city).delete()
+        else:
+            count = Alert.query.delete()
+        
+        db.session.commit()
+        return jsonify({
+            'success': True, 
+            'message': f'Deleted {count} alert(s)'
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
